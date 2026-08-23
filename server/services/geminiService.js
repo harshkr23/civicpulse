@@ -66,7 +66,7 @@ const analyzeComplaint = async (description, image) => {
 
   const genAI = new GoogleGenerativeAI(getApiKey());
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3.6-flash',
     generationConfig: {
       responseMimeType: 'application/json',
       responseSchema,
@@ -128,7 +128,7 @@ const generateCivicReport = async () => {
   };
   const genAI = new GoogleGenerativeAI(getApiKey());
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3.6-flash',
     generationConfig: { responseMimeType: 'application/json', responseSchema: civicReportSchema },
   });
   const prompt = `You are CivicPulse AI, preparing a concise municipal dashboard report. Return JSON only. Use these verified live figures exactly: ${JSON.stringify(facts)}. Set the headline to TODAY'S CIVIC REPORT.`;
@@ -138,7 +138,7 @@ const generateCivicReport = async () => {
 
 const transcribeComplaintAudio = async (audio) => {
   const genAI = new GoogleGenerativeAI(getApiKey());
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
   const result = await model.generateContent([
     { text: 'Transcribe this civic complaint exactly as spoken. Return only the transcript, with no labels or commentary.' },
     audioPartFromDataUrl(audio),
