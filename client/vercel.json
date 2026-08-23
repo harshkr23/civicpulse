@@ -1,6 +1,10 @@
 {
     "rewrites": [
         {
+            "source": "/api/:path*",
+            "destination": "https://civicpulse-3-yxue.onrender.com/api/:path*"
+        },
+        {
             "source": "/(.*)",
             "destination": "/"
         }
