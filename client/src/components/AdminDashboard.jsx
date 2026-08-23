@@ -5,7 +5,7 @@ import ComplaintsByCategoryChart from './ComplaintsByCategoryChart';
 import SeverityResolution from './SeverityResolution';
 import { getComplaints, updateComplaint as persistComplaint } from '../api/complaints';
 
-/* ─── Icon Helper ─────────────────────────────────────────────── */
+/* â”€â”€â”€ Icon Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const Icon = ({ name, className = 'h-5 w-5' }) => {
   const paths = {
     grid: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
@@ -34,7 +34,7 @@ const Icon = ({ name, className = 'h-5 w-5' }) => {
   );
 };
 
-/* ─── Animated Number Counter ─────────────────────────────────── */
+/* â”€â”€â”€ Animated Number Counter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function Counter({ target, duration = 1000 }) {
   const [val, setVal] = useState(0);
   const raf = useRef(null);
@@ -52,7 +52,7 @@ function Counter({ target, duration = 1000 }) {
   return <>{val}</>;
 }
 
-/* ─── Constants ───────────────────────────────────────────────── */
+/* â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 const STATUS_DARK = {
   Pending: 'bg-amber-500/15 text-amber-300 ring-amber-500/25',
   Assigned: 'bg-blue-500/15 text-blue-300 ring-blue-500/25',
@@ -80,7 +80,68 @@ const NAV = [['Overview', 'grid'], ['Issues', 'issues'], ['Map', 'pin'], ['Analy
 const BAR_H = [38, 56, 45, 75, 61, 90, 70];
 const DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-/* ─── Activity Feed ───────────────────────────────────────────── */
+/* â”€â”€â”€ Residents Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function ResidentsView({ complaints }) {
+  const grouped = complaints.reduce((acc, c) => {
+    const ward = c.location || 'Unknown Area';
+    if (!acc[ward]) acc[ward] = [];
+    acc[ward].push(c);
+    return acc;
+  }, {});
+  const sorted = Object.entries(grouped).sort((a, b) => b[1].length - a[1].length);
+  const dotColor = { critical:'bg-rose-500', high:'bg-orange-400', medium:'bg-amber-400', low:'bg-emerald-400' };
+  return (
+    <div className="space-y-4">
+      <div className="mb-6">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">Residents</p>
+        <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Complaints by Area</h2>
+        <p className="mt-1.5 text-sm text-slate-500">Issues grouped by reported location across the district.</p>
+      </div>
+      {sorted.length === 0 ? (
+        <div className="ad-card rounded-2xl px-6 py-20 text-center">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-indigo-500/10">
+            <Icon name="users" className="h-7 w-7 text-indigo-400" />
+          </div>
+          <p className="font-semibold text-slate-300">No residents data yet</p>
+          <p className="mt-1.5 text-sm text-slate-500">Civic reports will appear here once submitted with a location.</p>
+        </div>
+      ) : sorted.map(([ward, items]) => (
+        <div key={ward} className="ad-card rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between border-b border-white/5 px-5 py-3.5">
+            <div className="flex items-center gap-3">
+              <Icon name="pin" className="h-4 w-4 shrink-0 text-indigo-400" />
+              <p className="font-semibold text-slate-200 text-sm truncate max-w-[240px]">{ward}</p>
+            </div>
+            <span className="shrink-0 rounded-full bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-400">
+              {items.length} report{items.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="divide-y divide-white/5">
+            {items.slice(0, 5).map(c => (
+              <div key={c._id} className="flex items-start gap-3 px-5 py-3">
+                <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor[c.severity] || 'bg-slate-500'}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-200">{c.category || 'Complaint'}</p>
+                  <p className="mt-0.5 truncate text-xs text-slate-500">{c.summary || c.description || 'â€”'}</p>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${{ critical:'bg-rose-500/15 text-rose-300 ring-rose-500/25', high:'bg-orange-500/15 text-orange-300 ring-orange-500/25', medium:'bg-amber-500/15 text-amber-300 ring-amber-500/25', low:'bg-emerald-500/15 text-emerald-300 ring-emerald-500/25' }[c.severity] || 'bg-white/5 text-slate-400 ring-white/10'}`}>
+                  {c.severity}
+                </span>
+              </div>
+            ))}
+            {items.length > 5 && (
+              <div className="px-5 py-2.5 text-center">
+                <p className="text-xs text-slate-500">+{items.length - 5} more complaint{items.length - 5 !== 1 ? 's' : ''} in this area</p>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* â”€â”€â”€ Activity Feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function ActivityFeed({ complaints }) {
   const recent = [...complaints].sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt)).slice(0,7);
   const timeAgo = (d) => {
@@ -133,7 +194,7 @@ function ActivityFeed({ complaints }) {
   );
 }
 
-/* ─── Notification Panel ──────────────────────────────────────── */
+/* â”€â”€â”€ Notification Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function NotifPanel({ onClose }) {
   const items = [
     { icon:'issues', bg:'bg-rose-500/10', color:'text-rose-400', text:'3 new critical complaints in Ward 4', time:'2 min ago' },
@@ -166,7 +227,7 @@ function NotifPanel({ onClose }) {
   );
 }
 
-/* ─── AI Report Modal ────────────────────────────────────────── */
+/* â”€â”€â”€ AI Report Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function AiReportModal({ report, onClose }) {
   const stats = [
     { label: 'Complaints received', value: report.complaintsReceived, big: true, color: '#818cf8' },
@@ -209,7 +270,7 @@ function AiReportModal({ report, onClose }) {
                 <svg viewBox="0 0 24 24" fill="currentColor" className="h-3 w-3">
                   <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
                 </svg>
-                Gemini AI · Generated
+                Gemini AI Â· Generated
               </span>
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-white">{report.headline}</h2>
@@ -255,12 +316,276 @@ function AiReportModal({ report, onClose }) {
           className="flex items-center justify-between px-6 py-4"
           style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}
         >
-          <p className="text-xs text-slate-500">Powered by Google Gemini · CivicPulse AI</p>
+          <p className="text-xs text-slate-500">Powered by Google Gemini Â· CivicPulse AI</p>
           <button
             onClick={onClose}
             className="rounded-xl bg-white/5 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
           >
             Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Settings Modal ─────────────────────────────────────────── */
+function SettingsModal({ onClose, complaintsCount }) {
+  const [tab, setTab] = useState('dashboard');
+  const [refreshInterval, setRefreshInterval] = useState('15');
+  const [defaultTab, setDefaultTab] = useState('Overview');
+  const [notifEmail, setNotifEmail] = useState(true);
+  const [notifCritical, setNotifCritical] = useState(true);
+  const [notifWeekly, setNotifWeekly] = useState(false);
+  const [retention, setRetention] = useState('90');
+  const [anonymize, setAnonymize] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => { setSaved(false); onClose(); }, 1200);
+  };
+
+  const Toggle = ({ on, onToggle, id }) => (
+    <button
+      id={id}
+      role="switch"
+      aria-checked={on}
+      onClick={onToggle}
+      className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200"
+      style={{ background: on ? 'linear-gradient(90deg,#6366f1,#8b5cf6)' : 'rgba(255,255,255,0.1)' }}
+    >
+      <span
+        className="inline-block h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-200"
+        style={{ transform: on ? 'translateX(24px)' : 'translateX(4px)' }}
+      />
+    </button>
+  );
+
+  const TABS = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'grid' },
+    { id: 'notifications', label: 'Notifications', icon: 'bell' },
+    { id: 'data', label: 'Data & Privacy', icon: 'shield' },
+    { id: 'about', label: 'About', icon: 'spark' },
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 z-[9500] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+      onClick={onClose}
+    >
+      <div
+        className="civic-enter relative flex w-full max-w-2xl overflow-hidden rounded-3xl flex-col"
+        style={{
+          background: '#0c1120',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 0 0 1px rgba(99,102,241,0.08), 0 40px 80px rgba(0,0,0,0.7)',
+          maxHeight: 'min(680px, calc(100vh - 2rem))',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-white/7 px-6 py-4 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30">
+              <Icon name="settings" className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white">Settings</h2>
+              <p className="text-xs text-slate-500">Configure your admin dashboard</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="grid h-8 w-8 place-items-center rounded-lg text-slate-400 hover:bg-white/8 hover:text-white transition-colors"
+          >
+            <Icon name="close" className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="flex flex-1 overflow-hidden">
+          <div className="shrink-0 w-44 border-r border-white/6 px-2 py-4 space-y-0.5">
+            {TABS.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                  tab === t.id
+                    ? 'bg-indigo-500/15 text-indigo-300'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                }`}
+              >
+                <Icon name={t.icon} className="h-4 w-4 shrink-0" />
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            {tab === 'dashboard' && (
+              <>
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-0.5">Dashboard Preferences</h3>
+                  <p className="text-xs text-slate-500">Customize how the dashboard behaves for you.</p>
+                </div>
+                <div className="space-y-4">
+                  <div className="rounded-2xl bg-white/3 border border-white/6 p-4 space-y-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-slate-200">Default Tab</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Which tab opens when you load the dashboard</p>
+                      </div>
+                      <select
+                        value={defaultTab}
+                        onChange={e => setDefaultTab(e.target.value)}
+                        className="ad-select rounded-xl px-3 py-2 text-sm outline-none shrink-0"
+                      >
+                        {['Overview','Issues','Map','Analytics','Residents'].map(t => <option key={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div className="border-t border-white/5" />
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-slate-200">Auto-Refresh Interval</p>
+                        <p className="text-xs text-slate-500 mt-0.5">How often to fetch new complaints</p>
+                      </div>
+                      <select
+                        value={refreshInterval}
+                        onChange={e => setRefreshInterval(e.target.value)}
+                        className="ad-select rounded-xl px-3 py-2 text-sm outline-none shrink-0"
+                      >
+                        <option value="10">Every 10s</option>
+                        <option value="15">Every 15s</option>
+                        <option value="30">Every 30s</option>
+                        <option value="60">Every 1 min</option>
+                        <option value="0">Manual only</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl bg-white/3 border border-white/6 p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-500/10">
+                        <Icon name="inbox" className="h-4 w-4 text-indigo-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-200">{complaintsCount} complaints loaded</p>
+                        <p className="text-xs text-slate-500 mt-1">Your dashboard is currently tracking {complaintsCount} civic reports. Use the export button in the header to download them as CSV.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+            {tab === 'notifications' && (
+              <>
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-0.5">Notification Preferences</h3>
+                  <p className="text-xs text-slate-500">Control which alerts you receive.</p>
+                </div>
+                <div className="rounded-2xl bg-white/3 border border-white/6 divide-y divide-white/5">
+                  {[
+                    { id: 'email', label: 'Email Alerts', desc: 'Receive new complaint notifications by email', on: notifEmail, set: setNotifEmail },
+                    { id: 'critical', label: 'Critical Issue Alerts', desc: 'Instant notification for critical severity reports', on: notifCritical, set: setNotifCritical },
+                    { id: 'weekly', label: 'Weekly Digest', desc: 'Weekly summary of all civic activity every Monday', on: notifWeekly, set: setNotifWeekly },
+                  ].map(item => (
+                    <div key={item.id} className="flex items-center justify-between gap-4 px-4 py-3.5">
+                      <div>
+                        <p className="text-sm font-medium text-slate-200">{item.label}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
+                      </div>
+                      <Toggle id={item.id} on={item.on} onToggle={() => item.set(v => !v)} />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {tab === 'data' && (
+              <>
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-0.5">Data & Privacy</h3>
+                  <p className="text-xs text-slate-500">Manage how complaint data is stored and displayed.</p>
+                </div>
+                <div className="space-y-4">
+                  <div className="rounded-2xl bg-white/3 border border-white/6 p-4 space-y-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-slate-200">Data Retention</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Keep resolved complaints for this long</p>
+                      </div>
+                      <select value={retention} onChange={e => setRetention(e.target.value)} className="ad-select rounded-xl px-3 py-2 text-sm outline-none shrink-0">
+                        <option value="30">30 days</option>
+                        <option value="90">90 days</option>
+                        <option value="180">6 months</option>
+                        <option value="365">1 year</option>
+                        <option value="0">Forever</option>
+                      </select>
+                    </div>
+                    <div className="border-t border-white/5" />
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-slate-200">Anonymize Reporter Data</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Hide reporter names in all exported files</p>
+                      </div>
+                      <Toggle id="anonymize" on={anonymize} onToggle={() => setAnonymize(v => !v)} />
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-rose-500/20 bg-rose-500/5 p-4">
+                    <p className="text-sm font-semibold text-rose-400 mb-1">Danger Zone</p>
+                    <p className="text-xs text-slate-500 mb-3">These actions are permanent and cannot be undone.</p>
+                    <button className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-semibold text-rose-400 hover:bg-rose-500/20 transition-colors">
+                      Clear all resolved complaints
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+            {tab === 'about' && (
+              <>
+                <div>
+                  <h3 className="text-sm font-semibold text-white mb-0.5">About CivicPulse</h3>
+                  <p className="text-xs text-slate-500">System information and documentation.</p>
+                </div>
+                <div className="space-y-3">
+                  <div className="rounded-2xl bg-white/3 border border-white/6 p-4 space-y-3">
+                    {[
+                      ['Version', 'CivicPulse v1.0.0'],
+                      ['AI Model', 'Google Gemini 2.0 Flash'],
+                      ['Stack', 'React + Node.js + MongoDB'],
+                      ['Last Updated', new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' })],
+                    ].map(([k,v]) => (
+                      <div key={k} className="flex items-center justify-between gap-4 text-sm">
+                        <span className="text-slate-500">{k}</span>
+                        <span className="font-medium text-slate-200">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <a href="https://github.com" target="_blank" rel="noreferrer" className="flex-1 rounded-xl border border-white/8 bg-white/3 px-4 py-2.5 text-center text-xs font-semibold text-slate-300 hover:bg-white/6 transition-colors">
+                      GitHub →
+                    </a>
+                    <a href="#" className="flex-1 rounded-xl border border-white/8 bg-white/3 px-4 py-2.5 text-center text-xs font-semibold text-slate-300 hover:bg-white/6 transition-colors">
+                      Documentation →
+                    </a>
+                    <a href="#" className="flex-1 rounded-xl border border-white/8 bg-white/3 px-4 py-2.5 text-center text-xs font-semibold text-slate-300 hover:bg-white/6 transition-colors">
+                      Report a Bug →
+                    </a>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center justify-between border-t border-white/6 px-6 py-3 shrink-0">
+          <button onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-white transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 hover:opacity-90 transition-opacity"
+          >
+            {saved ? (
+              <><Icon name="check" className="h-4 w-4" /> Saved!</>
+            ) : (
+              'Save changes'
+            )}
           </button>
         </div>
       </div>
@@ -331,13 +656,37 @@ export default function AdminDashboard() {
     finally { setReportLoading(false); }
   };
 
+  const exportCSV = () => {
+    const cols = ['ID', 'Category', 'Severity', 'Location', 'Status', 'Summary', 'Department', 'Reported'];
+    const rows = filtered.map(c => [
+      c._id,
+      c.category || '',
+      c.severity || '',
+      c.location || '',
+      titleCase(c.status),
+      (c.summary || c.description || '').replace(/,/g, ';').replace(/\n/g, ' '),
+      c.suggestedDepartment || '',
+      c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-GB') : '',
+    ]);
+    const csv = [cols, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `civicpulse-complaints-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const today = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const highCount = complaints.filter(c=>['high','critical'].includes(c.severity)).length;
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <>
+      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} complaintsCount={complaints.length} />}
       <style>{`
-        /* ── Base ── */
+        /* â”€â”€ Base â”€â”€ */
         .ad-bg {
           background: #080d1a;
           background-image:
@@ -346,25 +695,25 @@ export default function AdminDashboard() {
             radial-gradient(ellipse at 50% 50%, rgba(6,182,212,0.03) 0%, transparent 70%);
           min-height: 100vh;
         }
-        /* ── Sidebar ── */
+        /* â”€â”€ Sidebar â”€â”€ */
         .ad-sidebar {
           background: rgba(8,13,26,0.96);
           border-right: 1px solid rgba(255,255,255,0.06);
           backdrop-filter: blur(24px);
         }
-        /* ── Header ── */
+        /* â”€â”€ Header â”€â”€ */
         .ad-header {
           background: rgba(8,13,26,0.88);
           border-bottom: 1px solid rgba(255,255,255,0.06);
           backdrop-filter: blur(20px);
         }
-        /* ── Card ── */
+        /* â”€â”€ Card â”€â”€ */
         .ad-card {
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.07);
           backdrop-filter: blur(8px);
         }
-        /* ── Stat Card ── */
+        /* â”€â”€ Stat Card â”€â”€ */
         .ad-stat {
           background: linear-gradient(135deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 100%);
           border: 1px solid rgba(255,255,255,0.08);
@@ -372,7 +721,7 @@ export default function AdminDashboard() {
           position: relative;
           overflow: hidden;
         }
-        /* ── Nav button active accent ── */
+        /* â”€â”€ Nav button active accent â”€â”€ */
         .ad-nav-active::before {
           content: '';
           position: absolute;
@@ -382,7 +731,7 @@ export default function AdminDashboard() {
           background: linear-gradient(to bottom, #22d3ee, #a78bfa);
         }
         .ad-nav-btn { position: relative; }
-        /* ── Selects & Inputs ── */
+        /* â”€â”€ Selects & Inputs â”€â”€ */
         .ad-select {
           background: rgba(255,255,255,0.05);
           border: 1px solid rgba(255,255,255,0.09);
@@ -400,25 +749,25 @@ export default function AdminDashboard() {
         }
         .ad-input::placeholder { color: #475569; }
         .ad-input:focus { border-color: rgba(99,102,241,0.5); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); outline: none; }
-        /* ── Bar chart ── */
+        /* â”€â”€ Bar chart â”€â”€ */
         .ad-bar { background: linear-gradient(to top, #4f46e5, #818cf8); border-radius: 4px 4px 0 0; transition: opacity .2s; }
         .ad-bar:hover { opacity: .75; }
-        /* ── Table ── */
+        /* â”€â”€ Table â”€â”€ */
         .ad-thead { background: rgba(255,255,255,0.025); border-bottom: 1px solid rgba(255,255,255,0.07); }
         .ad-row { border-bottom: 1px solid rgba(255,255,255,0.05); transition: background .15s; }
         .ad-row:last-child { border-bottom: none; }
         .ad-row:hover { background: rgba(255,255,255,0.03); }
-        /* ── Live pulse ── */
+        /* â”€â”€ Live pulse â”€â”€ */
         @keyframes ad-pulse { 50% { opacity: .2; } }
         .ad-pulse { animation: ad-pulse 1.8s ease-in-out infinite; }
-        /* ── AI Banner ── */
+        /* â”€â”€ AI Banner â”€â”€ */
         .ad-ai-banner {
           border: 1px solid rgba(99,102,241,0.35);
           box-shadow: 0 0 80px rgba(99,102,241,0.12), 0 0 0 1px rgba(99,102,241,0.05);
           overflow: hidden;
           border-radius: 1rem;
         }
-        /* ── Mobile nav ── */
+        /* â”€â”€ Mobile nav â”€â”€ */
         .ad-mobile-nav {
           background: rgba(8,13,26,0.97);
           border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -428,7 +777,7 @@ export default function AdminDashboard() {
 
       <div className="ad-bg text-slate-200">
 
-        {/* ── Sidebar ─────────────────────────────── */}
+        {/* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <aside className="ad-sidebar fixed inset-y-0 left-0 hidden w-[240px] flex-col lg:flex">
           {/* Logo */}
           <div className="px-5 pt-6 pb-8">
@@ -470,7 +819,7 @@ export default function AdminDashboard() {
 
           {/* Bottom */}
           <div className="shrink-0 border-t border-white/5 px-3 pt-4 pb-5">
-            <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all">
+            <button onClick={() => setSettingsOpen(true)} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-white/5 hover:text-slate-200 transition-all">
               <Icon name="settings" className="h-[18px] w-[18px]" />
               Settings
             </button>
@@ -486,7 +835,7 @@ export default function AdminDashboard() {
           </div>
         </aside>
 
-        {/* ── Main ────────────────────────────────── */}
+        {/* â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <main className="lg:ml-[240px]">
 
           {/* Header */}
@@ -517,8 +866,16 @@ export default function AdminDashboard() {
                 {notif && <NotifPanel onClose={() => setNotif(false)} />}
               </div>
 
-              <button className="hidden sm:flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3.5 py-2 text-sm font-medium text-slate-300 hover:bg-white/8 hover:text-white transition-colors">
-                Export
+              <button
+                onClick={exportCSV}
+                className="hidden sm:flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3.5 py-2 text-sm font-medium text-slate-300 hover:bg-white/8 hover:text-white transition-colors"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Export CSV
               </button>
 
               <button
@@ -527,7 +884,7 @@ export default function AdminDashboard() {
                 className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3.5 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 hover:opacity-90 disabled:cursor-wait disabled:opacity-60 transition-opacity"
               >
                 <Icon name="spark" className="h-4 w-4" />
-                <span className="hidden sm:inline">{reportLoading ? 'Generating…' : 'AI Report'}</span>
+                <span className="hidden sm:inline">{reportLoading ? 'Generatingâ€¦' : 'AI Report'}</span>
               </button>
             </div>
           </header>
@@ -548,60 +905,53 @@ export default function AdminDashboard() {
             ))}
           </nav>
 
+          {/* AI Report Modal */}
+          {report && <AiReportModal report={report} onClose={() => setReport(null)} />}
+
           {/* Page body */}
           <div className="mx-auto max-w-[1440px] px-5 py-7 sm:px-8 sm:py-9">
 
-            {/* Title row */}
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">Civic Operations</p>
-                <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">CivicPulse Admin</h1>
-                <p className="mt-1.5 text-sm text-slate-500">Here's what's happening across your city today.</p>
-              </div>
-              <button
-                onClick={() => setActive('Issues')}
-                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-              >
-                <Icon name="inbox" className="h-4 w-4" />
-                View all issues
-              </button>
-            </div>
-
-            {/* AI Report Modal */}
-            {report && <AiReportModal report={report} onClose={() => setReport(null)} />}
-
-            {/* Stat cards */}
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {stats.map((s,i) => (
-                <article key={s.label} className="ad-stat civic-enter rounded-2xl p-5" style={{animationDelay:`${i*60}ms`}}>
-                  {/* glow blob */}
-                  <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl opacity-15 bg-gradient-to-br ${s.grad}`} />
-                  <div className="relative flex items-start justify-between">
-                    <div className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${s.grad} shadow-lg`}>
-                      <Icon name={s.icon} className="h-5 w-5 text-white" />
-                    </div>
-                    <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${s.trend>=0?'bg-emerald-500/10 text-emerald-400':'bg-rose-500/10 text-rose-400'}`}>
-                      <Icon name="arrow_up" className={`h-3 w-3 ${s.trend<0?'rotate-180':''}`} />
-                      {Math.abs(s.trend)}%
-                    </span>
-                  </div>
-                  <p className="relative mt-5 text-4xl font-bold tracking-tight text-white">
-                    <Counter target={s.value} />
-                  </p>
-                  <p className="relative mt-1 text-sm font-medium text-slate-400">{s.label}</p>
-                  <div className={`absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r ${s.grad} opacity-50`} />
-                </article>
-              ))}
-            </section>
-
-            {/* Map view */}
-            {active === 'Map' ? (
-              <div className="mt-7"><ComplaintMap complaints={complaints} /></div>
-            ) : (
+            {/* â”€â”€ Overview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {active === 'Overview' && (
               <>
+                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">Civic Operations</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">CivicPulse Admin</h1>
+                    <p className="mt-1.5 text-sm text-slate-500">Here's what's happening across your city today.</p>
+                  </div>
+                  <button
+                    onClick={() => setActive('Issues')}
+                    className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <Icon name="inbox" className="h-4 w-4" />
+                    View all issues
+                  </button>
+                </div>
+
+                {/* Stat cards */}
+                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  {stats.map((s,i) => (
+                    <article key={s.label} className="ad-stat civic-enter rounded-2xl p-5" style={{animationDelay:`${i*60}ms`}}>
+                      <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl opacity-15 bg-gradient-to-br ${s.grad}`} />
+                      <div className="relative flex items-start justify-between">
+                        <div className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${s.grad} shadow-lg`}>
+                          <Icon name={s.icon} className="h-5 w-5 text-white" />
+                        </div>
+                        <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${s.trend>=0?'bg-emerald-500/10 text-emerald-400':'bg-rose-500/10 text-rose-400'}`}>
+                          <Icon name="arrow_up" className={`h-3 w-3 ${s.trend<0?'rotate-180':''}`} />
+                          {Math.abs(s.trend)}%
+                        </span>
+                      </div>
+                      <p className="relative mt-5 text-4xl font-bold tracking-tight text-white"><Counter target={s.value} /></p>
+                      <p className="relative mt-1 text-sm font-medium text-slate-400">{s.label}</p>
+                      <div className={`absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r ${s.grad} opacity-50`} />
+                    </article>
+                  ))}
+                </section>
+
                 {/* Charts row */}
                 <section className="mt-7 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
-                  {/* Bar chart */}
                   <div className="ad-card rounded-2xl p-5 sm:p-6">
                     <div className="flex items-center justify-between">
                       <div>
@@ -609,8 +959,7 @@ export default function AdminDashboard() {
                         <p className="mt-0.5 text-sm text-slate-500">Reports received over the last 7 days</p>
                       </div>
                       <select className="ad-select rounded-lg px-3 py-1.5 text-xs font-medium">
-                        <option>Last 7 days</option>
-                        <option>Last 30 days</option>
+                        <option>Last 7 days</option><option>Last 30 days</option>
                       </select>
                     </div>
                     <div className="mt-7 flex h-52 items-end gap-2 pb-1 sm:gap-3">
@@ -623,141 +972,224 @@ export default function AdminDashboard() {
                     </div>
                     <div className="mt-4 flex gap-5 text-xs text-slate-500">
                       <span className="flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-indigo-500 inline-block" />New issues</span>
-                      <span className="flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-emerald-400 inline-block" />Resolved issues</span>
+                      <span className="flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-emerald-400 inline-block" />Resolved</span>
                     </div>
                   </div>
                   <ComplaintsByCategoryChart complaints={complaints} />
                 </section>
 
-                {/* Severity + Resolution */}
                 <SeverityResolution complaints={complaints} />
 
-                {/* Issues table + Activity Feed */}
+                {/* Issues table + feed */}
                 <div className="mt-7 grid gap-6 xl:grid-cols-[1fr_300px]">
-
-                  {/* Issues table */}
-                  <section className="ad-card overflow-hidden rounded-2xl">
-                    <div className="flex flex-wrap items-start justify-between gap-4 p-5 sm:px-6">
-                      <div>
-                        <h2 className="font-semibold text-white">Complaint Table</h2>
-                        <p className="mt-0.5 text-sm text-slate-500">Review and update reports from Buxar residents.</p>
-                      </div>
-                      <span className="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-400">
-                        {filtered.length} complaints
-                      </span>
-                    </div>
-
-                    {/* Filters */}
-                    <div className="flex flex-col gap-2.5 border-t border-white/5 px-4 py-3 sm:flex-row sm:px-6">
-                      <label className="relative min-w-0 flex-1">
-                        <span className="sr-only">Search complaints</span>
-                        <input
-                          value={search}
-                          onChange={e => setSearch(e.target.value)}
-                          placeholder="Search complaints…"
-                          className="ad-input w-full rounded-xl px-3 py-2 pl-9 text-sm"
-                        />
-                        <svg className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></svg>
-                      </label>
-                      <select value={category} onChange={e=>setCategory(e.target.value)} className="ad-select rounded-xl px-3 py-2 text-sm outline-none">
-                        <option>All categories</option>
-                        {categories.map(c=><option key={c}>{c}</option>)}
-                      </select>
-                      <select value={sort} onChange={e=>setSort(e.target.value)} className="ad-select rounded-xl px-3 py-2 text-sm outline-none">
-                        <option>Newest</option>
-                        <option>Severity</option>
-                      </select>
-                    </div>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[700px] text-left text-sm">
-                        <thead className="ad-thead">
-                          <tr>
-                            {['Category','Severity','Location','Status','Reported','Action'].map(h=>(
-                              <th key={h} className={`px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${h==='Action'?'text-right':''}`}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filtered.map(c => {
-                            const s = SEV[c.severity] || SEV.low;
-                            const sk = titleCase(c.status);
-                            return (
-                              <tr key={c._id} className="ad-row">
-                                <td className="px-5 py-4">
-                                  <p className="font-semibold text-slate-200">{c.category}</p>
-                                  <p className="mt-0.5 max-w-[200px] truncate text-xs text-slate-500">{c.summary||c.description}</p>
-                                </td>
-                                <td className="px-5 py-4">
-                                  <span className={`inline-flex items-center gap-1.5 text-sm font-semibold ${s.color}`}>
-                                    <i className={`h-2 w-2 rounded-full ${s.dot} shadow-sm ${s.glow}`} />
-                                    {titleCase(c.severity)}
-                                  </span>
-                                </td>
-                                <td className="px-5 py-4 text-sm text-slate-400">{c.location||'—'}</td>
-                                <td className="px-5 py-4">
-                                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${STATUS_DARK[sk]||STATUS_DARK.Pending}`}>
-                                    {sk}
-                                  </span>
-                                </td>
-                                <td className="px-5 py-4 text-xs text-slate-500">
-                                  {new Date(c.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
-                                </td>
-                                <td className="px-5 py-4 text-right">
-                                  <label className="sr-only" htmlFor={`st-${c._id}`}>Update {c.category}</label>
-                                  <select
-                                    id={`st-${c._id}`}
-                                    value={sk}
-                                    onChange={e=>updateStatus(c._id,e.target.value)}
-                                    className="ad-select rounded-lg px-2.5 py-1.5 text-xs font-medium outline-none"
-                                  >
-                                    <option>Pending</option>
-                                    <option>In Progress</option>
-                                    <option>Resolved</option>
-                                  </select>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                          {filtered.length === 0 && (
-                            <tr>
-                              <td colSpan="6" className="px-6 py-20 text-center">
-                                <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-indigo-500/10">
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7 text-indigo-400">
-                                    <circle cx="11" cy="11" r="8" strokeLinecap="round" strokeLinejoin="round"/>
-                                    <path d="m16 16 4 4" strokeLinecap="round" strokeLinejoin="round"/>
-                                  </svg>
-                                </div>
-                                <p className="font-semibold text-slate-300">No complaints found</p>
-                                <p className="mt-1.5 text-sm text-slate-500">
-                                  {search || category !== 'All categories'
-                                    ? 'Try adjusting your search or filters.'
-                                    : 'Civic reports will appear here once submitted.'}
-                                </p>
-                                {(search || category !== 'All categories') && (
-                                  <button
-                                    onClick={() => { setSearch(''); setCategory('All categories'); }}
-                                    className="mt-4 rounded-xl bg-indigo-500/10 px-4 py-2 text-xs font-semibold text-indigo-400 hover:bg-indigo-500/20 transition-colors"
-                                  >
-                                    Clear filters
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </section>
-
-                  {/* Activity feed */}
+                  <IssuesTable filtered={filtered} search={search} setSearch={setSearch}
+                    category={category} setCategory={setCategory} sort={sort} setSort={setSort}
+                    categories={categories} updateStatus={updateStatus} titleCase={titleCase} />
                   <ActivityFeed complaints={complaints} />
                 </div>
               </>
             )}
+
+            {/* â”€â”€ Issues tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {active === 'Issues' && (
+              <>
+                <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                  <div>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">Civic Operations</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">All Issues</h1>
+                    <p className="mt-1.5 text-sm text-slate-500">Review and update all reports from residents.</p>
+                  </div>
+                  <span className="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-400">{filtered.length} complaints</span>
+                </div>
+                <IssuesTable filtered={filtered} search={search} setSearch={setSearch}
+                  category={category} setCategory={setCategory} sort={sort} setSort={setSort}
+                  categories={categories} updateStatus={updateStatus} titleCase={titleCase} />
+              </>
+            )}
+
+            {/* â”€â”€ Map tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {active === 'Map' && (
+              <div>
+                <div className="mb-6">
+                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">Civic Operations</p>
+                  <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Complaint Map</h1>
+                  <p className="mt-1.5 text-sm text-slate-500">Geographic view of all reported issues.</p>
+                </div>
+                <ComplaintMap complaints={complaints} />
+              </div>
+            )}
+
+            {/* â”€â”€ Analytics tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {active === 'Analytics' && (
+              <>
+                <div className="mb-8">
+                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">Civic Operations</p>
+                  <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">Analytics</h1>
+                  <p className="mt-1.5 text-sm text-slate-500">Visual breakdown of complaint trends.</p>
+                </div>
+                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  {stats.map((s,i) => (
+                    <article key={s.label} className="ad-stat civic-enter rounded-2xl p-5" style={{animationDelay:`${i*60}ms`}}>
+                      <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl opacity-15 bg-gradient-to-br ${s.grad}`} />
+                      <div className="relative flex items-start justify-between">
+                        <div className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${s.grad} shadow-lg`}>
+                          <Icon name={s.icon} className="h-5 w-5 text-white" />
+                        </div>
+                        <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${s.trend>=0?'bg-emerald-500/10 text-emerald-400':'bg-rose-500/10 text-rose-400'}`}>
+                          <Icon name="arrow_up" className={`h-3 w-3 ${s.trend<0?'rotate-180':''}`} />
+                          {Math.abs(s.trend)}%
+                        </span>
+                      </div>
+                      <p className="relative mt-5 text-4xl font-bold tracking-tight text-white"><Counter target={s.value} /></p>
+                      <p className="relative mt-1 text-sm font-medium text-slate-400">{s.label}</p>
+                      <div className={`absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r ${s.grad} opacity-50`} />
+                    </article>
+                  ))}
+                </section>
+                <section className="mt-7 grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+                  <div className="ad-card rounded-2xl p-5 sm:p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="font-semibold text-white">Issue Activity</h2>
+                        <p className="mt-0.5 text-sm text-slate-500">Reports received over the last 7 days</p>
+                      </div>
+                      <select className="ad-select rounded-lg px-3 py-1.5 text-xs font-medium">
+                        <option>Last 7 days</option><option>Last 30 days</option>
+                      </select>
+                    </div>
+                    <div className="mt-7 flex h-52 items-end gap-2 pb-1 sm:gap-3">
+                      {BAR_H.map((h,i) => (
+                        <div key={i} className="group flex h-full flex-1 flex-col justify-end gap-1.5">
+                          <div className="ad-bar" style={{height:`${h}%`}} />
+                          <span className="text-center text-[11px] text-slate-500 group-hover:text-slate-400 transition-colors">{DAYS[i]}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <ComplaintsByCategoryChart complaints={complaints} />
+                </section>
+                <SeverityResolution complaints={complaints} />
+              </>
+            )}
+
+            {/* â”€â”€ Residents tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {active === 'Residents' && <ResidentsView complaints={complaints} />}
+
           </div>
         </main>
       </div>
     </>
+  );
+}
+
+/* â”€â”€â”€ Issues Table (shared by Overview + Issues tab) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+function IssuesTable({ filtered, search, setSearch, category, setCategory, sort, setSort, categories, updateStatus, titleCase }) {
+  return (
+    <section className="ad-card overflow-hidden rounded-2xl">
+      <div className="flex flex-wrap items-start justify-between gap-4 p-5 sm:px-6">
+        <div>
+          <h2 className="font-semibold text-white">Complaint Table</h2>
+          <p className="mt-0.5 text-sm text-slate-500">Review and update reports from Buxar residents.</p>
+        </div>
+        <span className="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-400">
+          {filtered.length} complaints
+        </span>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col gap-2.5 border-t border-white/5 px-4 py-3 sm:flex-row sm:px-6">
+        <label className="relative min-w-0 flex-1">
+          <span className="sr-only">Search complaints</span>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search complaintsâ€¦"
+            className="ad-input w-full rounded-xl px-3 py-2 pl-9 text-sm"
+          />
+          <svg className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="m16 16 4 4" /></svg>
+        </label>
+        <select value={category} onChange={e=>setCategory(e.target.value)} className="ad-select rounded-xl px-3 py-2 text-sm outline-none">
+          <option>All categories</option>
+          {categories.map(c=><option key={c}>{c}</option>)}
+        </select>
+        <select value={sort} onChange={e=>setSort(e.target.value)} className="ad-select rounded-xl px-3 py-2 text-sm outline-none">
+          <option>Newest</option>
+          <option>Severity</option>
+        </select>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[700px] text-left text-sm">
+          <thead className="ad-thead">
+            <tr>
+              {['Category','Severity','Location','Status','Reported','Action'].map(h=>(
+                <th key={h} className={`px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 ${h==='Action'?'text-right':''}`}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(c => {
+              const s = SEV[c.severity] || SEV.low;
+              const sk = titleCase(c.status);
+              return (
+                <tr key={c._id} className="ad-row">
+                  <td className="px-5 py-4">
+                    <p className="font-semibold text-slate-200">{c.category}</p>
+                    <p className="mt-0.5 max-w-[200px] truncate text-xs text-slate-500">{c.summary||c.description}</p>
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className={`inline-flex items-center gap-1.5 text-sm font-semibold ${s.color}`}>
+                      <i className={`h-2 w-2 rounded-full ${s.dot} shadow-sm ${s.glow}`} />
+                      {titleCase(c.severity)}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-sm text-slate-400">{c.location||'â€”'}</td>
+                  <td className="px-5 py-4">
+                    <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${STATUS_DARK[sk]||STATUS_DARK.Pending}`}>
+                      {sk}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 text-xs text-slate-500">
+                    {new Date(c.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
+                  </td>
+                  <td className="px-5 py-4 text-right">
+                    <label className="sr-only" htmlFor={`st-${c._id}`}>Update {c.category}</label>
+                    <select
+                      id={`st-${c._id}`}
+                      value={sk}
+                      onChange={e=>updateStatus(c._id,e.target.value)}
+                      className="ad-select rounded-lg px-2.5 py-1.5 text-xs font-medium outline-none"
+                    >
+                      <option>Pending</option>
+                      <option>Assigned</option>
+                      <option>In Progress</option>
+                      <option>Resolved</option>
+                    </select>
+                  </td>
+                </tr>
+              );
+            })}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan="6" className="px-6 py-20 text-center">
+                  <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-indigo-500/10">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-7 w-7 text-indigo-400">
+                      <circle cx="11" cy="11" r="8" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="m16 16 4 4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <p className="font-semibold text-slate-300">No complaints found</p>
+                  <p className="mt-1.5 text-sm text-slate-500">
+                    {search || category !== 'All categories'
+                      ? 'Try adjusting your search or filters.'
+                      : 'Civic reports will appear here once submitted.'}
+                  </p>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

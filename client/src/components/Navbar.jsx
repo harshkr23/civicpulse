@@ -67,6 +67,18 @@ export default function Navbar() {
         .nb-admin:hover { border-color: rgba(99,102,241,.5); color: #a5b4fc; background: rgba(99,102,241,.08); }
         @keyframes nb-slide { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
         .nb-drawer { animation: nb-slide 220ms cubic-bezier(.22,1,.36,1) both; }
+        .nb-drawer-link {
+          display: block;
+          padding: .625rem .75rem;
+          border-radius: 10px;
+          color: #94a3b8;
+          font-size: .875rem;
+          font-weight: 500;
+          transition: color .2s, background .2s;
+          text-decoration: none;
+        }
+        .nb-drawer-link:hover, .nb-drawer-link:focus { color: #e2e8f0; background: rgba(255,255,255,0.06); }
+        .nb-drawer-link:active { background: rgba(255,255,255,0.1); }
       `}</style>
 
       <nav className="nb-glass fixed inset-x-0 top-0 z-50">
@@ -137,14 +149,7 @@ export default function Navbar() {
                   key={l.href}
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  style={{
-                    padding: '.625rem .75rem',
-                    borderRadius: 10,
-                    color: '#94a3b8',
-                    fontSize: '.875rem',
-                    fontWeight: 500,
-                    transition: 'color .2s, background .2s',
-                  }}
+                  className="nb-drawer-link"
                 >
                   {l.label}
                 </a>
@@ -152,13 +157,8 @@ export default function Navbar() {
               <a
                 href="/admin"
                 onClick={() => setOpen(false)}
-                style={{
-                  padding: '.625rem .75rem',
-                  borderRadius: 10,
-                  color: '#64748b',
-                  fontSize: '.875rem',
-                  fontWeight: 500,
-                }}
+                className="nb-drawer-link"
+                style={{ color: '#64748b' }}
               >
                 Admin
               </a>

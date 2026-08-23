@@ -48,7 +48,7 @@ function makePinHtml(color, ring, pulse = false) {
   `;
 }
 
-/* ── Detail panel ──────────────────────────────────────────────── */
+/* ── Detail panel ──────────────────────────────────────────── */
 function DetailPanel({ complaint, onClose }) {
   if (!complaint) return null;
   const sev  = SEV[complaint.severity] || SEV.low;
@@ -58,81 +58,128 @@ function DetailPanel({ complaint, onClose }) {
     : '—';
 
   return (
-    <div
-      className="cp-panel civic-enter absolute right-4 top-4 z-[500] w-[min(300px,calc(100%-2rem))] overflow-hidden rounded-2xl"
-      role="dialog"
-      aria-label="Complaint details"
-    >
-      <div className="relative flex items-start justify-between gap-3 p-4" style={{ background: sev.color + '22', borderBottom: `1px solid ${sev.color}30` }}>
-        <div className="flex items-start gap-3">
-          <div className="mt-0.5 h-3 w-3 shrink-0 rounded-full" style={{ background: sev.color, boxShadow: `0 0 8px ${sev.color}` }} />
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest" style={{ color: sev.color }}>{sev.label} severity</p>
-            <h3 className="mt-0.5 text-sm font-bold text-white leading-snug">{complaint.category || 'Complaint'}</h3>
+    <>
+      {/* Mobile: full-width bottom sheet */}
+      <div
+        className="cp-panel cp-slide-up md:hidden fixed bottom-0 left-0 right-0 z-[600] overflow-hidden rounded-t-2xl"
+        role="dialog"
+        aria-label="Complaint details"
+      >
+        <div className="relative flex items-start justify-between gap-3 p-4" style={{ background: sev.color + '22', borderBottom: `1px solid ${sev.color}30` }}>
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 h-3 w-3 shrink-0 rounded-full" style={{ background: sev.color, boxShadow: `0 0 8px ${sev.color}` }} />
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: sev.color }}>{sev.label} severity</p>
+              <h3 className="mt-0.5 text-sm font-bold text-white leading-snug">{complaint.category || 'Complaint'}</h3>
+            </div>
           </div>
+          <button onClick={onClose} className="shrink-0 rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white transition-colors" aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M18 6 6 18M6 6l12 12" strokeLinecap="round"/></svg>
+          </button>
         </div>
-        <button
-          onClick={onClose}
-          className="shrink-0 rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
-          aria-label="Close detail panel"
-        >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
-            <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      <div className="space-y-3 p-4">
-        <p className="text-sm text-slate-300 leading-relaxed">
-          {complaint.summary || complaint.description || 'No description provided.'}
-        </p>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-white/5 px-3 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Status</p>
-            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_BADGE[complaint.status] || STATUS_BADGE.pending}`}>
-              {sk || 'Pending'}
-            </span>
+        <div className="space-y-3 p-4">
+          <p className="text-sm text-slate-300 leading-relaxed">{complaint.summary || complaint.description || 'No description provided.'}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-white/5 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Status</p>
+              <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_BADGE[complaint.status] || STATUS_BADGE.pending}`}>{sk || 'Pending'}</span>
+            </div>
+            <div className="rounded-xl bg-white/5 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Severity</p>
+              <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${sev.badge}`}>{sev.label}</span>
+            </div>
           </div>
-          <div className="rounded-xl bg-white/5 px-3 py-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Severity</p>
-            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${sev.badge}`}>
-              {sev.label}
-            </span>
+          {complaint.location && (
+            <div className="flex items-start gap-2 rounded-xl bg-white/5 px-3 py-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 h-4 w-4 shrink-0 text-slate-500"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="10" r="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <p className="text-xs text-slate-300 leading-relaxed">{complaint.location}</p>
+            </div>
+          )}
+          <div className="flex items-center gap-2 text-xs text-slate-500 pt-1 border-t border-white/5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5 shrink-0"><circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round"/><polyline points="12 6 12 12 16 14" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Reported {time}
           </div>
-        </div>
-
-        {complaint.location && (
-          <div className="flex items-start gap-2 rounded-xl bg-white/5 px-3 py-2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 h-4 w-4 shrink-0 text-slate-500">
-              <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="12" cy="10" r="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <p className="text-xs text-slate-300 leading-relaxed">{complaint.location}</p>
-          </div>
-        )}
-
-        {complaint.suggestedDepartment && (
-          <div className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0 text-slate-500">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeLinecap="round" strokeLinejoin="round"/>
-              <polyline points="9 22 9 12 15 12 15 22" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <p className="text-xs text-slate-300">{complaint.suggestedDepartment}</p>
-          </div>
-        )}
-
-        <div className="flex items-center gap-2 text-xs text-slate-500 pt-1 border-t border-white/5">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5 shrink-0">
-            <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round"/>
-            <polyline points="12 6 12 12 16 14" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Reported {time}
         </div>
       </div>
-    </div>
+
+      {/* Desktop: top-right overlay */}
+      <div
+        className="cp-panel civic-enter absolute right-4 top-4 z-[500] hidden w-[min(300px,calc(100%-2rem))] overflow-hidden rounded-2xl md:block"
+        role="dialog"
+        aria-label="Complaint details"
+      >
+        <div className="relative flex items-start justify-between gap-3 p-4" style={{ background: sev.color + '22', borderBottom: `1px solid ${sev.color}30` }}>
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 h-3 w-3 shrink-0 rounded-full" style={{ background: sev.color, boxShadow: `0 0 8px ${sev.color}` }} />
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest" style={{ color: sev.color }}>{sev.label} severity</p>
+              <h3 className="mt-0.5 text-sm font-bold text-white leading-snug">{complaint.category || 'Complaint'}</h3>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="shrink-0 rounded-lg p-1 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label="Close detail panel"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
+              <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="space-y-3 p-4">
+          <p className="text-sm text-slate-300 leading-relaxed">
+            {complaint.summary || complaint.description || 'No description provided.'}
+          </p>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-xl bg-white/5 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Status</p>
+              <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_BADGE[complaint.status] || STATUS_BADGE.pending}`}>
+                {sk || 'Pending'}
+              </span>
+            </div>
+            <div className="rounded-xl bg-white/5 px-3 py-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Severity</p>
+              <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${sev.badge}`}>
+                {sev.label}
+              </span>
+            </div>
+          </div>
+
+          {complaint.location && (
+            <div className="flex items-start gap-2 rounded-xl bg-white/5 px-3 py-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="mt-0.5 h-4 w-4 shrink-0 text-slate-500">
+                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="10" r="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <p className="text-xs text-slate-300 leading-relaxed">{complaint.location}</p>
+            </div>
+          )}
+
+          {complaint.suggestedDepartment && (
+            <div className="flex items-center gap-2 rounded-xl bg-white/5 px-3 py-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4 shrink-0 text-slate-500">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" strokeLinecap="round" strokeLinejoin="round"/>
+                <polyline points="9 22 9 12 15 12 15 22" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <p className="text-xs text-slate-300">{complaint.suggestedDepartment}</p>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-xs text-slate-500 pt-1 border-t border-white/5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5 shrink-0">
+              <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round"/>
+              <polyline points="12 6 12 12 16 14" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Reported {time}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
+
 
 /* ── Main component ────────────────────────────────────────────── */
 export default function ComplaintMap({ complaints }) {
@@ -173,6 +220,8 @@ export default function ComplaintMap({ complaints }) {
       style.id = 'cp-styles';
       style.textContent = `
         @keyframes cp-pulse { 0%,100%{opacity:.8;transform:scale(1)} 50%{opacity:.2;transform:scale(1.6)} }
+        @keyframes cp-slide-up { from { transform:translateY(100%); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        .cp-slide-up { animation: cp-slide-up 280ms cubic-bezier(.22,1,.36,1) both; }
         .cp-marker-wrap { background:none!important; border:none!important; }
         .leaflet-popup-content-wrapper { display:none!important; }
         .leaflet-popup-tip-container { display:none!important; }

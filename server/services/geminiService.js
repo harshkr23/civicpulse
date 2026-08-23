@@ -50,10 +50,13 @@ const imagePartFromDataUrl = (image) => {
 };
 
 const audioPartFromDataUrl = (audio) => {
-  const match = audio?.match(/^data:(audio\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  // Match audio MIME types including codec suffixes like audio/webm;codecs=opus
+  const match = audio?.match(/^data:(audio\/[^;,]+(?:;[^,]*)?);base64,(.+)$/);
   if (!match) throw new Error('A valid audio recording is required');
 
-  return { inlineData: { mimeType: match[1], data: match[2] } };
+  // Strip codec suffix from mimeType so the API accepts it cleanly
+  const mimeType = match[1].split(';')[0];
+  return { inlineData: { mimeType, data: match[2] } };
 };
 
 const analyzeComplaint = async (description, image) => {
@@ -63,7 +66,7 @@ const analyzeComplaint = async (description, image) => {
 
   const genAI = new GoogleGenerativeAI(getApiKey());
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3.6-flash',
+    model: 'gemini-2.0-flash',
     generationConfig: {
       responseMimeType: 'application/json',
       responseSchema,

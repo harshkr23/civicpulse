@@ -206,7 +206,7 @@ export default function ReportForm({ onSubmitted }) {
           </div>
 
           <div>
-            <div className="mb-2 flex items-center justify-between gap-3">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <label htmlFor="description" className="block text-sm font-medium text-slate-200">
                 Describe the problem
               </label>
@@ -229,9 +229,19 @@ export default function ReportForm({ onSubmitted }) {
                   }}
                   disabled={isTranscribing}
                   aria-pressed={isRecording}
-                  className={`inline-flex touch-none select-none items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-wait disabled:opacity-60 ${isRecording ? 'border-red-400/50 bg-red-400/10 text-red-300' : 'border-white/10 bg-white/5 text-slate-200 hover:border-cyan-400/40 hover:text-white'}`}
+                  aria-label={isTranscribing ? 'Transcribing recording' : isRecording ? 'Recording — release to stop' : 'Hold to record voice input'}
+                  style={{ touchAction: 'none', WebkitTouchCallout: 'none', userSelect: 'none' }}
+                  className={`inline-flex select-none items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-wait disabled:opacity-60 ${
+                    isRecording
+                      ? 'border-red-400/50 bg-red-400/10 text-red-300 shadow-lg shadow-red-500/20'
+                      : 'border-white/10 bg-white/5 text-slate-200 hover:border-cyan-400/40 hover:text-white'
+                  }`}
                 >
-                  <span className={isRecording ? 'animate-pulse' : ''} aria-hidden="true">🎤</span>
+                  <span
+                    className={isRecording ? 'animate-pulse' : ''}
+                    aria-hidden="true"
+                    style={{ fontSize: '1rem' }}
+                  >🎤</span>
                   {isTranscribing ? 'Transcribing…' : isRecording ? 'Recording… release to stop' : 'Hold / Record'}
                 </button>
               )}

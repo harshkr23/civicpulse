@@ -147,11 +147,11 @@ export default function ComplaintsByCategoryChart({ complaints }) {
   const gap  = 10;
   const chartH = Math.max(200, data.length * (barH + gap));
 
-  /* right margin to give room for label text */
-  const rightMargin = 64;
+  /* right margin to give room for label text — smaller on mobile */
+  const rightMargin = 48;
 
   return (
-    <div className="ad-card civic-enter mt-7 rounded-2xl p-5 sm:p-6">
+    <div className="ad-card civic-enter rounded-2xl p-5 sm:p-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
